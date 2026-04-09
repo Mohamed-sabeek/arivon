@@ -12,6 +12,7 @@ import ProfileForm from './pages/ProfileForm';
 import Dashboard from './pages/Dashboard';
 import Profile from './pages/Profile';
 import ATS from './pages/ATS';
+import BrowseJobs from './pages/BrowseJobs';
 import Sidebar from './components/Sidebar';
 import Navbar from './components/Navbar';
 
@@ -99,6 +100,14 @@ const AppContent = () => {
                 element={
                   <ProtectedRoute>
                     <ATS />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/jobs" 
+                element={
+                  <ProtectedRoute>
+                    <BrowseJobs />
                   </ProtectedRoute>
                 } 
               />

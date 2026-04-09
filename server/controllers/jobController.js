@@ -1,3 +1,4 @@
+const axios = require('axios');
 const jobs = require('../data/jobs.json');
 const User = require('../models/User');
 
@@ -51,4 +52,41 @@ const getDashboardData = async (req, res) => {
   }
 };
 
-module.exports = { getDashboardData };
+const searchAdzunaJobs = async (req, res) => {
+  try {
+    const { role, location } = req.query;
+    const appId = process.env.ADZUNA_APP_ID;
+    const appKey = process.env.ADZUNA_APP_KEY;
+    const country = 'in'; // Default to India as discussed
+
+    if (!appId || !appKey) {
+      console.error("Adzuna API keys missing in .env");
+      return res.status(500).json({ message: "Job search service misconfigured" });
+    }
+
+    const what = encodeURIComponent(role || '');
+    const where = encodeURIComponent(location || '');
+    
+    const url = `https://api.adzuna.com/v1/api/jobs/${country}/search/1?app_id=${appId}&app_key=${appKey}&what=${what}&where=${where}&content-type=application/json`;
+
+    const response = await axios.get(url);
+    
+    const normalizedJobs = response.data.results.map(job => ({
+      id: job.id,
+      title: job.title.replace(/<\/?[^>]+(>|$)/g, ""), // Remove HTML tags if any
+      company: job.company.display_name,
+      location: job.location.display_name,
+      description: job.description.replace(/<\/?[^>]+(>|$)/g, ""),
+      redirect_url: job.redirect_url,
+      extractedSkills: job.category.label ? [job.category.label] : [], // Adzuna doesn't provide granular skills easily
+      postedDate: job.created
+    }));
+
+    res.json(normalizedJobs);
+  } catch (error) {
+    console.error("Adzuna API Error:", error.message);
+    res.status(500).json({ message: "Failed to fetch jobs from Adzuna", error: error.message });
+  }
+};
+
+module.exports = { getDashboardData, searchAdzunaJobs };

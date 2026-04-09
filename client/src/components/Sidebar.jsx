@@ -10,7 +10,8 @@ import {
   ChevronLeft,
   Sparkles,
   Zap,
-  FileSearch
+  FileSearch,
+  Briefcase
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import logo from '../assets/logo.png';
@@ -23,6 +24,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
     { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
     { icon: UserIcon, label: 'Profile', path: '/profile' },
     { icon: FileSearch, label: 'ATS Analyzer', path: '/ats' },
+    { icon: Briefcase, label: 'Browse Jobs', path: '/jobs' },
   ];
 
   const handleLogout = () => {
