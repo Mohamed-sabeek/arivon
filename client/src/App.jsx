@@ -20,12 +20,14 @@ import AssessmentResult from './pages/AssessmentResult';
 import Level2 from './pages/Level2';
 import Sidebar from './components/Sidebar';
 import Navbar from './components/Navbar';
+import AIWidget from './components/chat/AIWidget';
 
 const AppContent = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const location = useLocation();
   const isPublicPage = location.pathname === '/' || location.pathname === '/login' || location.pathname === '/register';
   const isOnboardingPage = location.pathname === '/onboarding';
+  const hideChatbot = location.pathname.startsWith('/assessment') || location.pathname.startsWith('/test-your-worth');
 
   return (
     <div className="flex min-h-screen bg-background text-white">
@@ -160,6 +162,7 @@ const AppContent = () => {
           </AnimatePresence>
         </main>
       </div>
+      {!hideChatbot && <AIWidget />}
     </div>
   );
 };
