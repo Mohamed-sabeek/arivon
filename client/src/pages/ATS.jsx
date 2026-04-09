@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../api/axios';
+import logo from '../assets/logoo.png';
 
 const ATS = () => {
   const [file, setFile] = useState(null);
@@ -69,9 +70,14 @@ const ATS = () => {
     formData.append('resume', file);
 
     try {
-      const response = await api.post('/ats/analyze', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
+      // Use Promise.all to ensure at least a 3-second delay for the animation
+      const [response] = await Promise.all([
+        api.post('/ats/analyze', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        }),
+        new Promise(resolve => setTimeout(resolve, 3000))
+      ]);
+
       setResult(response.data);
       try {
         localStorage.setItem('atsResult', JSON.stringify(response.data));
@@ -226,15 +232,56 @@ const ATS = () => {
       )}
 
       {loading && (
-        <div className="py-24 flex flex-col items-center justify-center space-y-6">
+        <div className="py-24 flex flex-col items-center justify-center space-y-10">
           <div className="relative">
-            <div className="w-32 h-32 border-4 border-primary/20 rounded-full" />
-            <div className="w-32 h-32 border-4 border-primary border-t-transparent rounded-full animate-spin absolute inset-0" />
-            <Cpu className="w-10 h-10 text-primary absolute inset-0 m-auto animate-pulse" />
+            {/* Outer spinning orange ring */}
+            <motion.div 
+              animate={{ rotate: 360 }}
+              transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+              className="w-52 h-52 border-[3px] border-primary border-t-transparent rounded-full shadow-[0_0_30px_rgba(249,115,22,0.4)]"
+            />
+            
+            {/* Inner logo container */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-40 h-40 rounded-full bg-background/50 backdrop-blur-md flex items-center justify-center p-6 border border-white/5">
+                <motion.img 
+                  initial={{ scale: 0.8 }}
+                  animate={{ scale: [0.8, 1.1, 0.8] }}
+                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                  src={logo} 
+                  alt="Analyzing..." 
+                  className="w-full h-full object-contain"
+                />
+              </div>
+            </div>
+
+            {/* Pulsing glow dots */}
+            {[0, 90, 180, 270].map((deg) => (
+              <motion.div 
+                key={deg}
+                animate={{ opacity: [0.2, 1, 0.2] }}
+                transition={{ duration: 1.5, repeat: Infinity, delay: deg/180 }}
+                className="absolute w-2.5 h-2.5 bg-primary rounded-full shadow-[0_0_10px_#f97316]"
+                style={{
+                  top: '50%',
+                  left: '50%',
+                  transform: `rotate(${deg}deg) translate(100px, -50%)`,
+                }}
+              />
+            ))}
           </div>
+
           <div className="text-center">
-            <h3 className="text-2xl font-bold text-white mb-2">Engaging Core Architectures...</h3>
-            <p className="text-secondary text-lg">Cross-referencing roles and categorizing technical domains</p>
+            <motion.h3 
+              animate={{ opacity: [0.5, 1, 0.5] }}
+              transition={{ duration: 2, repeat: Infinity }}
+              className="text-2xl font-black text-white mb-2 tracking-tighter uppercase"
+            >
+              Synthesizing Payload...
+            </motion.h3>
+            <p className="text-secondary text-lg font-medium opacity-60">
+              Cross-referencing your architectural stack with live market demand.
+            </p>
           </div>
         </div>
       )}
