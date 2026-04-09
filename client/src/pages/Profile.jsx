@@ -250,52 +250,10 @@ const Profile = () => {
           <DetailSection icon={Heart} label="Interests" isList={true} field="interests" />
         </div>
 
-        {/* Projects */}
-        {profile.projects && (
-          <div className="glass-card p-10 space-y-8">
-            <h3 className="text-xl font-bold border-b border-white/5 pb-4">Project Experience</h3>
-            {profile.projects.hasProjects ? (
-              <>
-                <div className="space-y-3">
-                  <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-secondary/60">
-                    <Briefcase className="w-4 h-4 text-primary/60" />
-                    Project Types
-                  </label>
-                  <div className="flex flex-wrap gap-2">
-                    {(() => {
-                      const projectTypes = safeGetArray(profile.projects.types);
-                      return projectTypes.length > 0 ? (
-                        projectTypes.map((type, idx) => (
-                          <span 
-                            key={idx} 
-                            className="px-3 py-1.5 bg-primary/10 text-primary border border-primary/20 rounded-full text-xs font-semibold hover:bg-primary/20 transition-colors"
-                          >
-                            {type}
-                          </span>
-                        ))
-                      ) : (
-                        <span className="text-secondary text-xs">No project types specified</span>
-                      );
-                    })()}
-                  </div>
-                </div>
-                <div className="space-y-3">
-                  <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-secondary/60">
-                    <Plus className="w-4 h-4 text-primary/60" />
-                    Project Count
-                  </label>
-                  <div className="text-sm font-bold text-white/90">{profile.projects.count || 'Not specified'}</div>
-                </div>
-              </>
-            ) : (
-              <p className="text-sm text-secondary">No projects listed yet</p>
-            )}
-          </div>
-        )}
 
         {/* Resume */}
         {profile.resumeUrl && (
-          <div className="glass-card p-10 space-y-8">
+          <div className="glass-card p-10 space-y-8 lg:col-span-2">
             <h3 className="text-xl font-bold border-b border-white/5 pb-4">Resume</h3>
             <a 
               href={`http://localhost:5000${profile.resumeUrl}`}
