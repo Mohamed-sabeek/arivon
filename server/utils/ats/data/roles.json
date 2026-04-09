@@ -2,43 +2,53 @@
   "roles": [
     {
       "name": "Full Stack Developer",
-      "keywords": ["react", "node.js", "javascript", "typescript", "mongodb", "postgresql", "docker"]
+      "core": ["react", "node.js", "javascript", "mongodb"],
+      "optional": ["typescript", "postgresql", "docker"]
     },
     {
       "name": "MERN Developer",
-      "keywords": ["mongodb", "express", "react", "node.js", "javascript"]
+      "core": ["mongodb", "express", "react", "node.js"],
+      "optional": ["javascript", "docker", "tailwind css"]
     },
     {
       "name": "Frontend Developer",
-      "keywords": ["react", "javascript", "typescript", "tailwind css", "next.js", "vue.js"]
+      "core": ["react", "javascript", "tailwind css"],
+      "optional": ["typescript", "next.js", "vue.js"]
     },
     {
       "name": "Backend Developer",
-      "keywords": ["node.js", "express.js", "postgresql", "mongodb", "docker", "python"]
+      "core": ["node.js", "express", "postgresql"],
+      "optional": ["mongodb", "docker", "python"]
     },
     {
       "name": "Java Backend Developer",
-      "keywords": ["java", "java spring boot", "postgresql", "mysql", "docker", "kubernetes"]
+      "core": ["java", "spring boot", "mysql"],
+      "optional": ["postgresql", "docker", "kubernetes"]
     },
     {
       "name": "Data Analyst",
-      "keywords": ["python", "pandas", "numpy", "sql", "machine learning"]
+      "core": ["python", "pandas", "sql"],
+      "optional": ["numpy", "machine learning"]
     },
     {
       "name": "Python Developer",
-      "keywords": ["python", "django", "fastapi", "postgresql", "docker"]
+      "core": ["python", "django", "postgresql"],
+      "optional": ["fastapi", "docker"]
     },
     {
       "name": "DevOps Engineer",
-      "keywords": ["docker", "kubernetes", "aws", "ci/cd", "linux"]
+      "core": ["docker", "kubernetes", "linux"],
+      "optional": ["aws", "ci/cd"]
     },
     {
       "name": "Mobile Developer",
-      "keywords": ["javascript", "typescript", "react", "node.js"]
+      "core": ["javascript", "react"],
+      "optional": ["typescript", "node.js"]
     },
     {
       "name": "Cloud Engineer",
-      "keywords": ["aws", "docker", "kubernetes", "ci/cd", "linux"]
+      "core": ["aws", "linux"],
+      "optional": ["docker", "kubernetes", "ci/cd"]
     }
   ]
 }

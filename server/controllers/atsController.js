@@ -70,13 +70,44 @@ const analyzeATS = async (req, res) => {
     // 2. Process Role Ranking Logic
     const roleMatches = [];
     rawRolesData.roles.forEach(role => {
-      const required = role.keywords;
-      let matchCount = 0;
-      required.forEach(kw => {
-        if (text.includes(kw.toLowerCase())) matchCount++;
+      const coreSkills = role.core || [];
+      const optionalSkills = role.optional || [];
+      const required = [...coreSkills, ...optionalSkills];
+
+      const matchedCore = coreSkills.filter(kw => text.includes(kw.toLowerCase()));
+      const matchedOptional = optionalSkills.filter(kw => text.includes(kw.toLowerCase()));
+
+      let roleScore = 0;
+
+      const coreWeight = 0.8;
+      const optionalWeight = 0.2;
+
+      const coreScoreRatio = coreSkills.length > 0 ? (matchedCore.length / coreSkills.length) : 0;
+      const optionalScoreRatio = optionalSkills.length > 0 ? (matchedOptional.length / optionalSkills.length) : 0;
+
+      let calculatedScore = (coreScoreRatio * coreWeight + optionalScoreRatio * optionalWeight) * 100;
+      
+      // Cap at 95
+      calculatedScore = Math.min(calculatedScore, 95);
+
+      // Apply penalty for missing core skills
+      const missingCore = coreSkills.length - matchedCore.length;
+      calculatedScore -= missingCore * 10;
+
+      // Bound to zero minimum and round
+      roleScore = Math.round(Math.max(calculatedScore, 0));
+
+      console.log("Role:", role.name);
+      console.log("Core Score:", coreScoreRatio);
+      console.log("Optional Score:", optionalScoreRatio);
+      console.log("Final Score:", roleScore);
+
+      roleMatches.push({ 
+        role: role.name, 
+        score: roleScore, 
+        requiredKw: required, 
+        matchCount: matchedCore.length + matchedOptional.length 
       });
-      const roleScore = required.length > 0 ? Math.round((matchCount / required.length) * 100) : 0;
-      roleMatches.push({ role: role.name, score: roleScore, requiredKw: required, matchCount });
     });
 
     // Sort descending by score
