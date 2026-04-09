@@ -9,7 +9,8 @@ import {
   LogOut, 
   ChevronLeft,
   Sparkles,
-  Zap
+  Zap,
+  FileSearch
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import logo from '../assets/logo.png';
@@ -21,6 +22,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
   const menuItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
     { icon: UserIcon, label: 'Profile', path: '/profile' },
+    { icon: FileSearch, label: 'ATS Analyzer', path: '/ats' },
   ];
 
   const handleLogout = () => {

@@ -11,6 +11,7 @@ import Onboarding from './pages/Onboarding';
 import ProfileForm from './pages/ProfileForm';
 import Dashboard from './pages/Dashboard';
 import Profile from './pages/Profile';
+import ATS from './pages/ATS';
 import Sidebar from './components/Sidebar';
 import Navbar from './components/Navbar';
 
@@ -90,6 +91,14 @@ const AppContent = () => {
                 element={
                   <ProtectedRoute>
                     <Profile />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/ats" 
+                element={
+                  <ProtectedRoute>
+                    <ATS />
                   </ProtectedRoute>
                 } 
               />
