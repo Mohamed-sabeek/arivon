@@ -18,6 +18,7 @@ import Assessment from './pages/Assessment';
 import Quiz from './pages/Quiz';
 import AssessmentResult from './pages/AssessmentResult';
 import Level2 from './pages/Level2';
+import Learn from './pages/Learn';
 import Sidebar from './components/Sidebar';
 import Navbar from './components/Navbar';
 import AIWidget from './components/chat/AIWidget';
@@ -155,6 +156,14 @@ const AppContent = () => {
                 element={
                   <ProtectedRoute>
                     <Level2 />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/learn" 
+                element={
+                  <ProtectedRoute>
+                    <Learn />
                   </ProtectedRoute>
                 } 
               />

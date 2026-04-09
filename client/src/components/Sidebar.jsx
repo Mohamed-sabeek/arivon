@@ -13,7 +13,8 @@ import {
   FileSearch,
   Briefcase,
   Trophy,
-  Brain
+  Brain,
+  BookOpen
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import logo from '../assets/logo.png';
@@ -28,6 +29,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
     { icon: FileSearch, label: 'ATS Analyzer', path: '/ats' },
     { icon: Briefcase, label: 'Browse Jobs', path: '/jobs' },
     { icon: Brain, label: 'Test Your Worth', path: '/assessment' },
+    { icon: BookOpen, label: 'Learn', path: '/learn' },
   ];
 
   const handleLogout = () => {
