@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
   User, Mail, GraduationCap, Briefcase, Heart, Target, Sparkles, 
-  Save, Edit3, Plus, X, FileText, Download, Clock, TrendingUp, BookOpen 
+  Save, Edit3, Plus, X, FileText, Download, Clock, TrendingUp, BookOpen, CheckCircle2
 } from 'lucide-react';
 import api from '../api/axios';
 import Loader from '../components/Loader';
@@ -149,14 +149,31 @@ const Profile = () => {
             {isList ? (
               <div className="flex flex-wrap gap-2">
                 {arrayData?.length > 0 ? (
-                  arrayData.map((item, idx) => (
-                    <span 
-                      key={idx} 
-                      className="px-3 py-1.5 bg-primary/10 text-primary border border-primary/20 rounded-full text-xs font-semibold hover:bg-primary/20 transition-colors"
-                    >
-                      {item}
-                    </span>
-                  ))
+                  arrayData.map((item, idx) => {
+                    const stats = profile.assessments && profile.assessments[item];
+                    const isFullyVerified = field === 'skills' && stats?.finalStatus === 'verified';
+                    const isPartiallyVerified = !isFullyVerified && field === 'skills' && stats?.level1?.status === 'passed';
+                    
+                    return (
+                      <span 
+                        key={idx} 
+                        className={`
+                          px-3 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-2
+                          ${isFullyVerified 
+                            ? 'bg-success/10 text-success border border-success/30 shadow-[0_0_10px_rgba(34,197,94,0.1)]' 
+                            : isPartiallyVerified
+                              ? 'bg-yellow-500/10 text-yellow-500 border border-yellow-500/30 shadow-[0_0_10px_rgba(234,179,8,0.1)]'
+                              : 'bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20'}
+                        `}
+                      >
+                        {isFullyVerified && <CheckCircle2 className="w-3 h-3" />}
+                        {isPartiallyVerified && <Target className="w-3 h-3" />}
+                        {item}
+                        {isFullyVerified && <span className="text-[8px] uppercase tracking-tighter opacity-70">Verified</span>}
+                        {isPartiallyVerified && <span className="text-[8px] uppercase tracking-tighter opacity-70">L1 Passed</span>}
+                      </span>
+                    );
+                  })
                 ) : (
                   <span className="text-secondary text-xs">No {label.toLowerCase()} added yet</span>
                 )}

@@ -10,6 +10,7 @@ const authRoutes = require('./routes/authRoutes');
 const profileRoutes = require('./routes/profileRoutes');
 const jobRoutes = require('./routes/jobRoutes');
 const atsRoutes = require('./routes/atsRoutes');
+const assessmentRoutes = require('./routes/assessmentRoutes');
 
 const app = express();
 
@@ -29,6 +30,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/jobs', jobRoutes);
 app.use('/api/ats', atsRoutes);
+app.use('/api/assessment', assessmentRoutes);
 
 // Database Connection
 mongoose.connect(process.env.MONGODB_URI)

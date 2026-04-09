@@ -14,6 +14,10 @@ import Profile from './pages/Profile';
 import ATS from './pages/ATS';
 import BrowseJobs from './pages/BrowseJobs';
 import JobDetails from './pages/JobDetails';
+import Assessment from './pages/Assessment';
+import Quiz from './pages/Quiz';
+import AssessmentResult from './pages/AssessmentResult';
+import Level2 from './pages/Level2';
 import Sidebar from './components/Sidebar';
 import Navbar from './components/Navbar';
 
@@ -117,6 +121,38 @@ const AppContent = () => {
                 element={
                   <ProtectedRoute>
                     <JobDetails />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/assessment" 
+                element={
+                  <ProtectedRoute>
+                    <Assessment />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/assessment/:skill" 
+                element={
+                  <ProtectedRoute>
+                    <Quiz />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/assessment/result" 
+                element={
+                  <ProtectedRoute>
+                    <AssessmentResult />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/assessment/:skill/level2" 
+                element={
+                  <ProtectedRoute>
+                    <Level2 />
                   </ProtectedRoute>
                 } 
               />

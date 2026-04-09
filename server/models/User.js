@@ -75,6 +75,25 @@ const UserSchema = new mongoose.Schema({
   resumeUrl: {
     type: String,
     default: ''
+  },
+  assessments: {
+    type: Map,
+    of: {
+      level1: { 
+        score: Number, 
+        status: { type: String, enum: ['passed', 'failed', 'pending'], default: 'pending' },
+        completedAt: Date
+      },
+      level2: { 
+        repoLink: String, 
+        aiScore: Number,
+        status: { type: String, enum: ['completed', 'failed', 'pending'], default: 'pending' },
+        feedback: String,
+        completedAt: Date
+      },
+      finalStatus: { type: String, enum: ['verified', 'pending'], default: 'pending' }
+    },
+    default: {}
   }
 }, { timestamps: true });
 
