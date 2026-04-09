@@ -105,7 +105,7 @@ const submitQuiz = async (req, res) => {
 };
 
 const submitRepo = async (req, res) => {
-  const { skill, repoLink, isSimulation } = req.body;
+  const { skill, repoLink, aiScore: clientScore, isSimulation } = req.body;
   const userId = req.user.id;
 
   if (!skill || !repoLink) {
@@ -122,15 +122,17 @@ const submitRepo = async (req, res) => {
     }
 
     let result;
-    if (isSimulation) {
-      // Mock result for simulation mode
+    if (isSimulation || clientScore !== undefined) {
+      // Use score provided by frontend (from real /repo/analyze call)
+      const score = clientScore ?? 82;
       result = {
-        aiScore: 82,
-        status: 'passed',
-        feedback: "Simulated certification passed. Repository demonstrates strong architectural patterns and consistent implementation logic."
+        aiScore: score,
+        status: score >= 70 ? 'passed' : 'failed',
+        feedback: score >= 70
+          ? `Repository scored ${score}/100 and passed AI evaluation.`
+          : `Repository scored ${score}/100. Did not meet the 70-point threshold.`
       };
     } else {
-      // Call Groq for Real Repo Analysis
       const prompt = `Analyze the target GitHub repository for a ${skill} professional: ${repoLink}.
       Provide a professional assessment of the implied code quality, best practices, and architectural maturity.
       Return strictly JSON format:
@@ -151,7 +153,7 @@ const submitRepo = async (req, res) => {
 
       result = JSON.parse(chatCompletion.choices[0].message.content);
     }
-    
+
     current.level2 = {
       repoLink,
       aiScore: result.aiScore,

@@ -96,40 +96,48 @@ const Level2 = () => {
     let currentStage = 0;
     const interval = setInterval(() => {
       currentStage++;
-      if (currentStage < stages.length) {
-        setLoadingText(stages[currentStage]);
-      }
+      if (currentStage < stages.length) setLoadingText(stages[currentStage]);
     }, 1000);
 
-    setTimeout(async () => {
+    try {
+      // Step 1: Real GitHub + AI analysis
+      const { data: analysis } = await api.post('/repo/analyze', { repoUrl: repoLink });
       clearInterval(interval);
-      try {
-        // PERSIST the simulation result to the DB
-        await api.post('/assessment/submit-repo', { 
-          skill, 
-          repoLink,
-          isSimulation: true 
-        });
-        
-        setResult({
-          aiScore: 82,
-          feedback: "The repository demonstrates a good understanding of core concepts. Commit history is consistent, and the project structure is well organized. Some improvements can be made in error handling and optimization.",
-          highlights: [
-            { type: 'pro', text: 'Frequent commits detected' },
-            { type: 'pro', text: 'Proper project structure' },
-            { type: 'pro', text: 'README present' },
-            { type: 'con', text: 'Improve error handling' },
-            { type: 'con', text: 'Add performance optimization' }
-          ],
-          finalStatus: 'verified'
-        });
-        setIsSubmitting(false);
-        await refreshProfile(); 
-      } catch (err) {
-        console.error('Finalization Error:', err);
-        setIsSubmitting(false);
-      }
-    }, 4500);
+
+      const { evaluation, repoData } = analysis;
+      const aiScore = evaluation.score;
+      const isPassed = aiScore >= 70 && evaluation.verdict !== 'Suspicious' && evaluation.verdict !== 'Poor';
+
+      // Step 2: Persist result to DB
+      await api.post('/assessment/submit-repo', {
+        skill,
+        repoLink,
+        aiScore,
+      });
+
+      // Step 3: Build highlights from AI evaluation
+      const highlights = [
+        ...( evaluation.strengths?.slice(0, 3).map(s => ({ type: 'pro', text: s })) || [] ),
+        ...( evaluation.issues?.slice(0, 2).map(i => ({ type: 'con', text: i })) || [] ),
+      ];
+
+      setResult({
+        aiScore,
+        feedback: evaluation.verdict === 'Suspicious' || evaluation.verdict === 'Poor'
+          ? `Your repository was flagged as "${evaluation.verdict}". The AI detected signs of low effort or inauthentic work. Score: ${aiScore}/100.`
+          : `${evaluation.verdict} work. Your repository scored ${aiScore}/100. ${evaluation.suggestions?.[0] || ''}`,
+        highlights,
+        finalStatus: isPassed ? 'verified' : 'failed',
+      });
+
+      await refreshProfile();
+    } catch (err) {
+      clearInterval(interval);
+      console.error('Repo Analysis Error:', err);
+      setError("Failed to analyze repository. Ensure it is public and the URL is correct.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // Professional AI Loader for Task Generation
