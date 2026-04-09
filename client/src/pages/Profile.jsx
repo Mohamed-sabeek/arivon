@@ -13,6 +13,7 @@ const Profile = () => {
   const [saving, setSaving] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({});
+  const [newResume, setNewResume] = useState(null);
 
   useEffect(() => {
     if (profile) {
@@ -43,32 +44,75 @@ const Profile = () => {
     }
   }, [profile]);
 
+  const handleCancel = () => {
+    // Re-parse profile for formData reset
+    const parsedProfile = { ...profile };
+    parsedProfile.skills = safeGetArray(profile.skills);
+    parsedProfile.interests = safeGetArray(profile.interests);
+    setFormData(parsedProfile);
+    setNewResume(null);
+    setIsEditing(false);
+  };
+
+  const handleResumeUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.type === 'application/pdf') {
+        setNewResume(file);
+      } else {
+        alert('Please upload a PDF file');
+      }
+    }
+  };
+
   const handleUpdate = async () => {
     setSaving(true);
     try {
-      // Format data before sending - ensure arrays are actual arrays, not strings
-      const formattedData = {
-        ...formData,
-        skills: typeof formData.skills === 'string' 
-          ? JSON.parse(formData.skills) 
-          : Array.isArray(formData.skills) 
-            ? formData.skills 
-            : [],
-        interests: typeof formData.interests === 'string' 
-          ? JSON.parse(formData.interests) 
-          : Array.isArray(formData.interests) 
-            ? formData.interests 
-            : []
-      };
+      let data;
+      let config = {};
+
+      if (newResume) {
+        // Use FormData only if a new file is present
+        data = new FormData();
+        
+        // Append simple fields
+        const fields = ['name', 'education', 'experience', 'level', 'branch', 'cgpa'];
+        fields.forEach(field => {
+          if (formData[field] !== undefined) data.append(field, formData[field]);
+        });
+
+        // Append stringified arrays (Crucial for Multipart Parsing)
+        data.append('skills', JSON.stringify(safeGetArray(formData.skills)));
+        data.append('interests', JSON.stringify(safeGetArray(formData.interests)));
+
+        // Append File
+        data.append('resume', newResume);
+        
+        // Let browser set the Content-Type with boundary automatically
+        config = {}; 
+      } else {
+        // Use traditional JSON for standard updates
+        data = {
+          ...formData,
+          skills: safeGetArray(formData.skills),
+          interests: safeGetArray(formData.interests)
+        };
+        config = {
+          headers: { 'Content-Type': 'application/json' }
+        };
+      }
+
+      const response = await api.put('/profile/update', data, config);
       
-      console.log('Sending formatted data:', formattedData);
-      
-      await api.put('/profile/update', formattedData);
-      await refreshProfile();
-      setIsEditing(false);
+      if (response.data) {
+        await refreshProfile();
+        setNewResume(null);
+        setIsEditing(false);
+      }
     } catch (err) {
       console.error('Update failed:', err);
-      alert('Failed to update profile. Please try again.');
+      const errorMsg = err.response?.data?.message || 'Failed to update profile. Please try again.';
+      alert(errorMsg);
     } finally {
       setSaving(false);
     }
@@ -205,23 +249,33 @@ const Profile = () => {
             )}
           </div>
         </div>
-        <button
-          onClick={isEditing ? handleUpdate : () => setIsEditing(true)}
-          disabled={saving}
-          className={`glow-button flex items-center gap-2 ${isEditing ? 'bg-success hover:bg-success/80' : ''}`}
-        >
-          {saving ? 'Saving...' : isEditing ? (
-            <>
-              <Save className="w-5 h-5" />
-              Save Changes
-            </>
-          ) : (
-            <>
-              <Edit3 className="w-5 h-5" />
-              Edit Profile
-            </>
+        <div className="flex gap-3">
+          {isEditing && (
+            <button
+              onClick={handleCancel}
+              className="px-6 py-3 rounded-2xl border border-white/10 hover:bg-white/5 transition-all text-secondary font-bold uppercase tracking-widest text-[10px]"
+            >
+              Cancel
+            </button>
           )}
-        </button>
+          <button
+            onClick={isEditing ? handleUpdate : () => setIsEditing(true)}
+            disabled={saving}
+            className={`glow-button flex items-center gap-2 ${isEditing ? 'bg-success hover:bg-success/80' : ''}`}
+          >
+            {saving ? 'Saving...' : isEditing ? (
+              <>
+                <Save className="w-5 h-5" />
+                Save Changes
+              </>
+            ) : (
+              <>
+                <Edit3 className="w-5 h-5" />
+                Edit Profile
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -252,9 +306,35 @@ const Profile = () => {
 
 
         {/* Resume */}
-        {profile.resumeUrl && (
-          <div className="glass-card p-10 space-y-8 lg:col-span-2">
-            <h3 className="text-xl font-bold border-b border-white/5 pb-4">Resume</h3>
+        <div className="glass-card p-10 space-y-8 lg:col-span-2">
+          <h3 className="text-xl font-bold border-b border-white/5 pb-4">Resume</h3>
+          {isEditing ? (
+            <div className="space-y-4">
+              <input
+                type="file"
+                id="resume-upload"
+                className="hidden"
+                accept=".pdf"
+                onChange={handleResumeUpload}
+              />
+              <div className="flex flex-col md:flex-row items-center gap-4">
+                <label 
+                  htmlFor="resume-upload"
+                  className="flex items-center gap-2 bg-primary/20 text-primary px-6 py-3 rounded-xl border border-primary/30 cursor-pointer hover:bg-primary/30 transition-all font-bold text-sm"
+                >
+                  <Plus className="w-4 h-4" />
+                  {newResume ? 'Change Selection' : 'Re-upload Resume'}
+                </label>
+                {newResume && (
+                  <div className="flex items-center gap-2 text-success bg-success/10 px-4 py-2 rounded-lg border border-success/20">
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span className="text-xs font-bold truncate max-w-[200px]">{newResume.name}</span>
+                  </div>
+                )}
+                <p className="text-xs text-secondary italic">Only PDF files up to 5MB</p>
+              </div>
+            </div>
+          ) : profile.resumeUrl ? (
             <a 
               href={`http://localhost:5000${profile.resumeUrl}`}
               target="_blank"
@@ -268,8 +348,12 @@ const Profile = () => {
               </div>
               <Download className="w-5 h-5 text-primary" />
             </a>
-          </div>
-        )}
+          ) : (
+            <div className="p-8 text-center border-2 border-dashed border-white/5 rounded-2xl">
+              <p className="text-secondary text-sm">No resume uploaded yet</p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

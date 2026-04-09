@@ -25,6 +25,7 @@ import AIWidget from './components/chat/AIWidget';
 
 const AppContent = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const location = useLocation();
   const isPublicPage = location.pathname === '/' || location.pathname === '/login' || location.pathname === '/register';
   const isOnboardingPage = location.pathname === '/onboarding';
@@ -33,10 +34,15 @@ const AppContent = () => {
   return (
     <div className="flex min-h-screen bg-background text-white">
       {!isPublicPage && !isOnboardingPage && (
-        <Sidebar isOpen={isSidebarOpen} toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
+        <Sidebar 
+          isOpen={isSidebarOpen} 
+          toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} 
+          isCollapsed={isCollapsed}
+          setIsCollapsed={setIsCollapsed}
+        />
       )}
       
-      <div className={`flex-grow flex flex-col transition-all duration-300 ${!isPublicPage && !isOnboardingPage ? 'lg:pl-72' : ''}`}>
+      <div className={`flex-grow flex flex-col transition-all duration-300 ${!isPublicPage && !isOnboardingPage ? (isCollapsed ? 'lg:pl-20' : 'lg:pl-72') : ''}`}>
         {isPublicPage ? (
           <Navbar toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
         ) : !isOnboardingPage ? (

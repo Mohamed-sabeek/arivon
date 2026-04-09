@@ -19,7 +19,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({
   storage: storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+  limits: { fileSize: 2 * 1024 * 1024 }, // 2MB limit
   fileFilter: (req, file, cb) => {
     const allowedTypes = /pdf|doc|docx/;
     const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
@@ -34,7 +34,7 @@ const upload = multer({
 });
 
 router.get('/me', auth, getProfile);
-router.put('/update', auth, updateProfile);
+router.put('/update', auth, upload.single('resume'), updateProfile);
 router.post('/complete', auth, checkProfileCompletion, upload.single('resume'), completeOnboarding);
 
 module.exports = router;
