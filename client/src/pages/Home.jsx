@@ -153,9 +153,13 @@ const Home = () => {
       <footer className="container mx-auto px-6 py-20 border-t border-white/5 mt-20">
         <div className="flex flex-col md:flex-row justify-between items-center gap-12">
           <div className="flex flex-col items-center md:items-start">
-            <Link to="/" className="flex items-center gap-0 group mb-4">
-              <img src={logo} alt="Arivon" className="w-12 h-12 object-contain group-hover:scale-110 transition-transform" />
-              <span className="text-2xl font-black tracking-tighter text-white">RIVON</span>
+            <Link to="/" className="flex items-center gap-2 mb-4 leading-none group">
+              <img 
+                src={logo} 
+                alt="Arivon" 
+                className="h-11 w-auto object-contain block group-hover:scale-110 transition-transform" 
+              />
+              <span className="text-2xl font-black tracking-tighter text-white m-0 leading-none">RIVON</span>
             </Link>
             <p className="text-secondary text-sm font-medium">© 2026 Arivon Intelligence Platform</p>
           </div>

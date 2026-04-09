@@ -58,13 +58,15 @@ const Sidebar = ({ isOpen, toggleSidebar, isCollapsed, setIsCollapsed }) => {
         {/* Header */}
         <div className={`p-6 flex flex-col gap-8 ${isCollapsed ? 'items-center' : ''}`}>
           <div className={`flex items-center w-full ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
-            <Link to="/dashboard" className="flex items-center gap-2 group overflow-hidden">
-              <div className="flex items-center justify-center w-10 h-10 shrink-0">
-                <img src={logo} alt="Arivon" className="w-full h-full object-contain group-hover:scale-110 transition-transform" />
-              </div>
+            <Link to="/dashboard" className="flex items-center gap-2 group overflow-hidden leading-none">
+              <img 
+                src={logo} 
+                alt="Arivon" 
+                className="h-11 w-auto object-contain block group-hover:scale-110 transition-transform" 
+              />
               {!isCollapsed && (
-                <span className="text-2xl font-black tracking-tighter text-white whitespace-nowrap transition-all duration-300">
-                  ARIVON
+                <span className="text-2xl font-black tracking-tighter text-white whitespace-nowrap m-0 leading-none">
+                  RIVON
                 </span>
               )}
             </Link>

@@ -28,9 +28,13 @@ const Navbar = ({ toggleSidebar }) => {
           )}
           
           {isPublicPage && (
-            <Link to="/" className="flex items-center gap-0 group">
-              <img src={logo} alt="Arivon" className="w-12 h-12 object-contain group-hover:scale-110 transition-transform" />
-              <span className="text-2xl font-black tracking-tighter text-white">RIVON</span>
+            <Link to="/" className="flex items-center gap-2 group leading-none">
+              <img 
+                src={logo} 
+                alt="Arivon" 
+                className="h-11 w-auto object-contain block group-hover:scale-110 transition-transform" 
+              />
+              <span className="text-2xl font-black tracking-tighter text-white m-0 leading-none">RIVON</span>
             </Link>
           )}
         </div>
