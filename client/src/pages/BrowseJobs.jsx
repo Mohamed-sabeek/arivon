@@ -9,9 +9,13 @@ import {
   Target,
   ExternalLink,
   Loader2,
-  AlertCircle
+  AlertCircle,
+  ArrowRight,
+  Database,
+  Cpu
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { JOBS_DATABASE } from '../data/jobs';
 import api from '../api/axios';
 
@@ -30,11 +34,14 @@ const roleKeywords = {
   "Developer": [] 
 };
 
-const JobCard = ({ job, isPersonalized }) => {
+const JobCard = ({ job, isPersonalized, onNavigate }) => {
   const date = job.postedDate ? new Date(job.postedDate).toLocaleDateString() : "";
   
   return (
-    <div className="glass-card p-6 border border-white/5 hover:border-primary/30 hover:shadow-[0_0_20px_rgba(249,115,22,0.1)] transition-all duration-300 relative group overflow-hidden">
+    <div 
+      onClick={() => onNavigate(job)}
+      className="glass-card p-6 border border-white/5 hover:border-primary/30 hover:shadow-[0_0_20px_rgba(249,115,22,0.1)] transition-all duration-300 relative group overflow-hidden cursor-pointer hover:scale-[1.01]"
+    >
       <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none group-hover:bg-primary/10 transition-all" />
       
       {isPersonalized && (
@@ -88,6 +95,7 @@ const JobCard = ({ job, isPersonalized }) => {
           href={job.redirect_url || job.applyUrl} 
           target="_blank" 
           rel="noopener noreferrer"
+          onClick={(e) => e.stopPropagation()}
           className="flex-shrink-0 px-6 py-2 bg-white/10 hover:bg-primary hover:text-white hover:border-primary border border-white/10 text-white rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2"
         >
           Apply Now
@@ -99,11 +107,13 @@ const JobCard = ({ job, isPersonalized }) => {
 };
 
 const BrowseJobs = () => {
+  const navigate = useNavigate();
   const [atsRole, setAtsRole] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [locationQuery, setLocationQuery] = useState("");
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
   const [error, setError] = useState(null);
   const [isAiFiltered, setIsAiFiltered] = useState(false);
 
@@ -160,10 +170,52 @@ const BrowseJobs = () => {
     setIsAiFiltered(false);
   };
 
+  const handleJobNavigation = (job) => {
+    setIsNavigating(true);
+    setTimeout(() => {
+      navigate(`/jobs/${job.id || 1}`, { state: { jobUrl: job.redirect_url || job.applyUrl } });
+    }, 1500); // Builds anticipation as requested
+  };
+
   return (
-    <div className="p-8 max-w-7xl mx-auto space-y-8 min-h-screen relative">
+    <div className="p-8 max-w-7xl mx-auto space-y-8 min-h-screen relative overflow-x-hidden">
       <div className="fixed top-0 right-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
       
+      {/* Navigation Loading Overlay */}
+      <AnimatePresence>
+        {isNavigating && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] bg-background/80 backdrop-blur-xl flex flex-col items-center justify-center"
+          >
+            <div className="relative">
+               <motion.div 
+                 animate={{ rotate: 360 }}
+                 transition={{ repeat: Infinity, duration: 4, ease: "linear" }}
+                 className="w-32 h-32 rounded-full border-t-2 border-primary/40 border-r-2 border-primary/20 shadow-[0_0_30px_rgba(249,115,22,0.1)]"
+               />
+               <div className="absolute inset-0 flex items-center justify-center">
+                 <Cpu className="w-10 h-10 text-primary animate-pulse" />
+               </div>
+            </div>
+            <motion.div 
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.2 }}
+              className="mt-8 text-center"
+            >
+              <h3 className="text-2xl font-black uppercase tracking-tighter text-white">Syncing Career Architecture</h3>
+              <p className="text-secondary font-bold flex items-center justify-center gap-2 mt-2">
+                <Database className="w-4 h-4 text-primary" />
+                Retrieving Personalized Insights...
+              </p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative z-10">
         <div>
@@ -274,7 +326,7 @@ const BrowseJobs = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: idx * 0.05 }}
                 >
-                  <JobCard job={job} isPersonalized={isAiFiltered} />
+                  <JobCard job={job} isPersonalized={isAiFiltered} onNavigate={handleJobNavigation} />
                 </motion.div>
               )) : (
                 <div className="py-24 text-center glass-card border border-white/5">
