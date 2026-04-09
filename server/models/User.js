@@ -87,14 +87,20 @@ const UserSchema = new mongoose.Schema({
       level2: { 
         repoLink: String, 
         aiScore: Number,
-        status: { type: String, enum: ['completed', 'failed', 'pending'], default: 'pending' },
+        status: { type: String, enum: ['passed', 'failed', 'pending', 'completed'], default: 'pending' },
         feedback: String,
         completedAt: Date
       },
       finalStatus: { type: String, enum: ['verified', 'pending'], default: 'pending' }
     },
     default: {}
-  }
+  },
+  screeningTasks: [
+    {
+      skill: String,
+      task: Object
+    }
+  ]
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', UserSchema);
