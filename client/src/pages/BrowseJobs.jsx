@@ -45,10 +45,23 @@ const JobCard = ({ job, isPersonalized, onNavigate }) => {
       <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none group-hover:bg-primary/10 transition-all" />
       
       {isPersonalized && (
-        <div className="absolute top-0 right-0 bg-primary/20 text-primary text-[10px] uppercase font-black px-3 py-1 rounded-bl-xl border-b border-l border-primary/20">
+        <div className="absolute top-0 right-0 bg-primary/20 text-primary text-[10px] uppercase font-black px-3 py-1 rounded-bl-xl border-b border-l border-primary/20 backdrop-blur-md">
           Smart Match
         </div>
       )}
+
+      <div className="flex items-center gap-2 mb-4">
+        {job.source === 'internal' ? (
+          <span className="flex items-center gap-1.5 px-3 py-1 bg-emerald-500/10 text-emerald-400 text-[10px] font-black uppercase rounded-lg border border-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.1)]">
+            <Zap className="w-3 h-3 animate-pulse" />
+            🔥 Featured
+          </span>
+        ) : (
+          <span className="flex items-center gap-1.5 px-3 py-1 bg-white/5 text-white/40 text-[10px] font-black uppercase rounded-lg border border-white/10">
+            🌐 External
+          </span>
+        )}
+      </div>
 
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div className="flex-1 min-w-0">
@@ -91,16 +104,20 @@ const JobCard = ({ job, isPersonalized, onNavigate }) => {
           )}
         </div>
 
-        <a 
-          href={job.redirect_url || job.applyUrl} 
-          target="_blank" 
-          rel="noopener noreferrer"
-          onClick={(e) => e.stopPropagation()}
-          className="flex-shrink-0 px-6 py-2 bg-white/10 hover:bg-primary hover:text-white hover:border-primary border border-white/10 text-white rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2"
+        <button 
+          onClick={(e) => {
+            e.stopPropagation();
+            onNavigate(job);
+          }}
+          className="flex-shrink-0 px-6 py-2 bg-white/10 hover:bg-primary hover:text-white hover:border-primary border border-white/10 text-white rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 group/apply"
         >
           Apply Now
-          <ExternalLink className="w-4 h-4" />
-        </a>
+          {job.source === 'internal' ? (
+            <ArrowRight className="w-4 h-4 group-hover/apply:translate-x-1 transition-transform" />
+          ) : (
+            <ExternalLink className="w-4 h-4" />
+          )}
+        </button>
       </div>
     </div>
   );
@@ -120,7 +137,7 @@ const BrowseJobs = () => {
   // Initial load: check ATS result and set role
   useEffect(() => {
     try {
-      const saved = localStorage.getItem('atsResult');
+      const saved = sessionStorage.getItem('atsResult');
       if (saved) {
         const parsed = JSON.parse(saved);
         if (parsed.topRole) {
@@ -142,19 +159,28 @@ const BrowseJobs = () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await api.get(`/jobs/search?role=${encodeURIComponent(role)}&location=${encodeURIComponent(location)}`);
-      if (res.data && res.data.length > 0) {
-        setJobs(res.data);
+      // Parallel fetch from internal and external sources
+      const [externalRes, internalRes] = await Promise.all([
+        api.get(`/jobs/search?role=${encodeURIComponent(role)}&location=${encodeURIComponent(location)}`),
+        api.get(`/jobs/search/internal?keyword=${encodeURIComponent(role)}&location=${encodeURIComponent(location)}`)
+      ]);
+
+      const internalJobs = (internalRes.data || []).slice(0, 3).map(job => ({ ...job, source: 'internal' }));
+      const externalJobs = (externalRes.data || []).map(job => ({ ...job, source: 'external' }));
+
+      // Priority: Top 3 Internal first, then External
+      const combinedJobs = [...internalJobs, ...externalJobs];
+
+      if (combinedJobs.length > 0) {
+        setJobs(combinedJobs);
         setIsAiFiltered(!!atsRole && role.toLowerCase() === atsRole.toLowerCase());
       } else {
-        // Fallback to local data if no results from API
         applyFallback(role);
       }
     } catch (err) {
       console.error("Fetch Jobs Error:", err);
-      // Fallback on error
       applyFallback(role);
-      setError("We encountered an issue fetching live jobs. Showing some curated roles based on your search.");
+      setError("Market intelligence feed partially offline. Displaying curated fallback roles.");
     } finally {
       setLoading(false);
     }
@@ -172,9 +198,19 @@ const BrowseJobs = () => {
 
   const handleJobNavigation = (job) => {
     setIsNavigating(true);
-    setTimeout(() => {
-      navigate(`/jobs/${job.id || 1}`, { state: { jobUrl: job.redirect_url || job.applyUrl } });
-    }, 1500); // Builds anticipation as requested
+    
+    // Check if it's an internal job or external
+    const timer = setTimeout(() => {
+      if (job.source === 'internal') {
+        navigate(`/jobs/${job.id}`);
+      } else {
+        window.open(job.redirect_url || job.applyUrl, '_blank');
+        setIsNavigating(false); // Cancel overlay for external redirects
+      }
+    }, 1500);
+
+    // If it was a redirect, the timeout might still fire if tab stays open, 
+    // but the overlay being closed is standard.
   };
 
   return (
@@ -188,13 +224,13 @@ const BrowseJobs = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-background/80 backdrop-blur-xl flex flex-col items-center justify-center"
+            className="fixed top-0 left-0 w-screen h-screen z-[9999] bg-[#0F172A] flex flex-col items-center justify-center"
           >
             <div className="relative">
                <motion.div 
                  animate={{ rotate: 360 }}
                  transition={{ repeat: Infinity, duration: 4, ease: "linear" }}
-                 className="w-32 h-32 rounded-full border-t-2 border-primary/40 border-r-2 border-primary/20 shadow-[0_0_30px_rgba(249,115,22,0.1)]"
+                 className="w-32 h-32 rounded-full border-t-2 border-primary/40 border-r-2 border-primary/20 shadow-[0_0_50px_rgba(249,115,22,0.2)]"
                />
                <div className="absolute inset-0 flex items-center justify-center">
                  <Cpu className="w-10 h-10 text-primary animate-pulse" />

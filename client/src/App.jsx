@@ -2,11 +2,12 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-route
 import { AuthProvider } from './context/AuthContext';
 import { ProtectedRoute, PublicRoute } from './components/RouteGuards';
 import { AnimatePresence } from 'framer-motion';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Menu } from 'lucide-react';
 
 import Home from './pages/Home';
-import { Login, Register } from './pages/AuthPages';
+import { Login } from './pages/AuthPages';
+import Register from './pages/Auth/Register';
 import Onboarding from './pages/Onboarding';
 import ProfileForm from './pages/ProfileForm';
 import Dashboard from './pages/Dashboard';
@@ -22,14 +23,45 @@ import Learn from './pages/Learn';
 import Sidebar from './components/Sidebar';
 import Navbar from './components/Navbar';
 import AIWidget from './components/chat/AIWidget';
+import RecruiterDashboard from './pages/recruiter/RecruiterDashboard';
+import PostJob from './pages/recruiter/PostJob';
+import MyJobs from './pages/recruiter/MyJobs';
+import RecruiterSetup from './pages/recruiter/RecruiterSetup';
+import Candidates from './pages/recruiter/Candidates';
+
+import { useAuth } from './context/AuthContext';
 
 const AppContent = () => {
+  const { user, loading } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const location = useLocation();
+
+  useEffect(() => {
+    const handleStorageChange = () => {
+      // Advanced Safety: Detect manual session tampering
+      sessionStorage.clear();
+      window.location.reload();
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
   const isPublicPage = location.pathname === '/' || location.pathname === '/login' || location.pathname === '/register';
   const isOnboardingPage = location.pathname === '/onboarding';
+  const isRecruiterPage = location.pathname.startsWith('/recruiter');
   const hideChatbot = location.pathname.startsWith('/assessment') || location.pathname.startsWith('/test-your-worth');
+
+  // Flicker Prevention: Don't render role-specific layout until auth is ready
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#0F172A] flex flex-col items-center justify-center gap-4">
+        <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+        <p className="text-secondary font-bold uppercase tracking-widest text-xs animate-pulse">Syncing Intel Session...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen bg-background text-white">
@@ -98,6 +130,46 @@ const AppContent = () => {
                 element={
                   <ProtectedRoute>
                     <Dashboard />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/recruiter/dashboard" 
+                element={
+                  <ProtectedRoute>
+                    <RecruiterDashboard />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/recruiter/setup" 
+                element={
+                  <ProtectedRoute>
+                    <RecruiterSetup />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/recruiter/post-job" 
+                element={
+                  <ProtectedRoute>
+                    <PostJob />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/recruiter/jobs" 
+                element={
+                  <ProtectedRoute>
+                    <MyJobs />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/recruiter/candidates" 
+                element={
+                  <ProtectedRoute>
+                    <Candidates />
                   </ProtectedRoute>
                 } 
               />

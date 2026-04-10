@@ -17,10 +17,12 @@ import {
   Cpu,
   ShieldCheck,
   ExternalLink,
-  Loader2
+  Loader2,
+  AlertCircle
 } from 'lucide-react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import api from '../api/axios';
 
 const JobDetails = () => {
   const navigate = useNavigate();
@@ -28,15 +30,8 @@ const JobDetails = () => {
   const { id } = useParams();
   const { profile, refreshProfile } = useAuth();
   
-  // 1. Hardcoded Job Requirements (Demo Optimization)
-  const jobInfo = {
-    title: "Senior Full Stack Engineer",
-    company: "TechNova Solutions",
-    location: "Bangalore, India (Hybrid)",
-    requiredSkills: ["JavaScript", "Python", "React", "Node.js", "Microservices", "REST API", "SQL", "AWS"],
-    externalUrl: "https://linkedin.com/jobs" // Fallback URL
-  };
-
+  const [job, setJob] = useState(null);
+  const [loadingJob, setLoadingJob] = useState(true);
   const [userSkills, setUserSkills] = useState([]);
   const [matchedSkills, setMatchedSkills] = useState([]);
   const [missingSkills, setMissingSkills] = useState([]);
@@ -45,60 +40,123 @@ const JobDetails = () => {
   
   const [isApplying, setIsApplying] = useState(false);
   const [applyStep, setApplyStep] = useState(0);
+  const [applied, setApplied] = useState(false);
+  const [applicationStatus, setApplicationStatus] = useState(null);
 
-  // Auto-refresh profile on mount to get latest skills
   useEffect(() => {
     if (refreshProfile) {
       refreshProfile();
     }
-  }, []);
+    fetchJobDetails();
+    fetchApplicationStatus();
+  }, [id]);
+
+  const fetchApplicationStatus = async () => {
+    try {
+      const isInternal = /^[0-9a-fA-F]{24}$/.test(id);
+      if (!isInternal) return;
+
+      const res = await api.get(`/applications/status/${id}`);
+      if (res.data.applied) {
+        setApplicationStatus(res.data.status);
+        if (res.data.status !== 'Rejected') {
+          setApplied(true);
+        } else {
+          setApplied(false); // Allow re-application if rejected
+        }
+      }
+    } catch (err) {
+      console.warn('Failed to fetch application status:', err);
+    }
+  };
+
+  const fetchJobDetails = async () => {
+    try {
+      // Check if it's an internal MongoDB ID (24 chars hex) or external
+      const isInternal = /^[0-9a-fA-F]{24}$/.test(id);
+      
+      if (isInternal) {
+        const res = await api.get(`/jobs/${id}`);
+        setJob({
+          title: res.data.title,
+          company: res.data.companyName,
+          location: res.data.location,
+          requiredSkills: res.data.skillsRequired || [],
+          description: res.data.description,
+          isInternal: true
+        });
+      } else {
+        // Fallback for demo/external jobs (mock data or from state)
+        setJob({
+          title: "Senior Full Stack Engineer",
+          company: "TechNova Solutions",
+          location: "Bangalore, India (Hybrid)",
+          requiredSkills: ["JavaScript", "Python", "React", "Node.js", "Microservices", "REST API", "SQL", "AWS"],
+          description: "We are looking for a Senior Full Stack Engineer to join our core architecture team. You will be responsible for building scalable microservices and high-performance frontend applications.",
+          externalUrl: location.state?.jobUrl || "https://linkedin.com/jobs",
+          isInternal: false
+        });
+      }
+    } catch (err) {
+      console.error('Failed to fetch job:', err);
+    } finally {
+      setLoadingJob(false);
+    }
+  };
 
   useEffect(() => {
-    // 2. Fetch User Skills (localStorage + AuthContext Fallback)
+    if (!job) return;
+
     let skills = [];
-    
     try {
       if (profile && Array.isArray(profile.skills)) {
-        skills = profile.skills;
-      }
-      const savedProfile = localStorage.getItem('userProfile');
-      if (savedProfile) {
-        const parsed = JSON.parse(savedProfile);
-        if (parsed.skills) skills = Array.isArray(parsed.skills) ? parsed.skills : skills;
+        skills = profile.skills.filter(skill => {
+          const assessment = profile.assessments?.[skill];
+          if (!assessment) return false;
+          return assessment.finalStatus === 'verified' || 
+                 assessment.level2?.status === 'completed' || 
+                 assessment.level2?.status === 'passed';
+        });
       }
     } catch (e) {
       console.warn("Skill sync warning:", e);
     }
 
     if (skills.length === 0) {
-      skills = ["JavaScript", "Node.js", "React", "SQL"];
+      // Fallback only if no skills at all, but prefer empty array if they just have unverified skills
+      // If profile is loaded but has 0 verified skills, this should actually be [] to reflect 0% match properly
+      // However, to keep fallback for guest mode:
+      if (!profile) {
+        skills = ["JavaScript", "Node.js", "React", "SQL"];
+      }
     }
 
     setUserSkills(skills);
 
-    // 3. Matching Logic
-    const matched = jobInfo.requiredSkills.filter(skill => 
+    const matched = job.requiredSkills.filter(skill => 
       skills.some(userSkill => userSkill.toLowerCase() === skill.toLowerCase())
     );
     
-    const missing = jobInfo.requiredSkills.filter(skill => 
+    const missing = job.requiredSkills.filter(skill => 
       !skills.some(userSkill => userSkill.toLowerCase() === skill.toLowerCase())
     );
     
     setMatchedSkills(matched);
     setMissingSkills(missing);
     
-    const percentage = Math.round((matched.length / jobInfo.requiredSkills.length) * 100);
+    const percentage = job.requiredSkills.length > 0 
+      ? Math.round((matched.length / job.requiredSkills.length) * 100) 
+      : 0;
+    
     setMatchPercentage(percentage);
 
-    // Count-up effect
     let start = 0;
     const duration = 1500;
-    const increment = percentage / (duration / 16);
+    const increment = (percentage || 1) / (duration / 16);
     
     const timer = setInterval(() => {
       start += increment;
-      if (start >= percentage) {
+      if (start >= (percentage || 1)) {
         setDisplayPercentage(percentage);
         clearInterval(timer);
       } else {
@@ -107,23 +165,50 @@ const JobDetails = () => {
     }, 16);
 
     return () => clearInterval(timer);
-  }, [profile]);
+  }, [profile, job]);
 
-  const handleApply = () => {
+  const handleApply = async () => {
     setIsApplying(true);
     setApplyStep(0);
 
-    // Use the dynamic URL passed from BrowseJobs, or fallback to default
-    const targetUrl = location.state?.jobUrl || jobInfo.externalUrl;
-
-    // Increased duration for a more "thorough" system feel
-    setTimeout(() => setApplyStep(1), 1500); 
-    setTimeout(() => setApplyStep(2), 3000); 
-    setTimeout(() => {
-      window.open(targetUrl, '_blank');
+    try {
+      if (job.isInternal) {
+        // Internal Application
+        setTimeout(() => setApplyStep(1), 1000);
+        setTimeout(() => setApplyStep(2), 2000);
+        
+        await api.post(`/applications/apply/${id}`);
+        
+        setTimeout(() => {
+          setApplied(true);
+          setIsApplying(false);
+        }, 3000);
+      } else {
+        // External Application
+        setTimeout(() => setApplyStep(1), 1000);
+        setTimeout(() => setApplyStep(2), 2000);
+        setTimeout(() => {
+          window.open(job.externalUrl, '_blank');
+          setIsApplying(false);
+        }, 3000);
+      }
+    } catch (err) {
+      console.error('Apply error:', err);
+      alert(err.response?.data?.message || 'Failed to submit application');
       setIsApplying(false);
-    }, 4500);
+    }
   };
+
+  if (loadingJob) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">
+        <Loader2 className="w-10 h-10 text-primary animate-spin" />
+        <p className="text-secondary font-bold uppercase tracking-widest text-xs animate-pulse">Syncing Job Details...</p>
+      </div>
+    );
+  }
+
+  const jobInfo = job; // Map back for easier template usage
 
   const getScoreColor = () => {
     if (matchPercentage >= 70) return 'text-success';
@@ -320,13 +405,48 @@ const JobDetails = () => {
                     : `Low technical overlap (${matchPercentage}%). This role requires specialized experience that isn't currently prominent in your profile. Bridge the architectural requirements to increase success rate.`}
               </p>
               <div className="flex items-center justify-center md:justify-start gap-6 pt-4">
-                <button 
-                  onClick={handleApply}
-                  className="px-10 py-4 bg-primary text-white font-black uppercase tracking-widest rounded-xl shadow-[0_0_20px_rgba(249,115,22,0.3)] hover:-translate-y-1 transition-all flex items-center gap-3 group"
-                >
-                   Finalize Application 
-                   <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                </button>
+                {applied ? (
+                  <div className={`px-10 py-4 font-black uppercase tracking-widest rounded-xl border flex items-center gap-3 ${
+                    applicationStatus === 'Shortlisted' 
+                      ? 'bg-amber-500/10 text-amber-500 border-amber-500/20 shadow-[0_0_15px_rgba(245,158,11,0.1)]' 
+                      : 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
+                  }`}>
+                    {applicationStatus === 'Shortlisted' ? <Zap className="w-5 h-5 animate-pulse" /> : <CheckCircle2 className="w-5 h-5" />}
+                    Applied: {applicationStatus || 'Pending Review'}
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-4">
+                    {applicationStatus === 'Rejected' && (
+                      <p className="text-xs font-bold text-error uppercase tracking-widest flex items-center gap-2">
+                        <XCircle className="w-4 h-4" />
+                        Previous application was rejected. You can re-apply below.
+                      </p>
+                    )}
+                    
+                    {matchPercentage < 50 ? (
+                      <div className="flex flex-col gap-3">
+                        <p className="text-xs font-bold text-error uppercase tracking-[0.2em] flex items-center gap-2 bg-error/10 p-3 rounded-lg border border-error/20">
+                          <AlertCircle className="w-4 h-4" />
+                          Finalize Application disabled: Your match score is less than 50%
+                        </p>
+                        <button 
+                          disabled
+                          className="px-10 py-4 bg-white/5 text-white/20 font-black uppercase tracking-widest rounded-xl border border-white/5 cursor-not-allowed flex items-center gap-3"
+                        >
+                          Application Restricted
+                        </button>
+                      </div>
+                    ) : (
+                      <button 
+                        onClick={handleApply}
+                        className="px-10 py-4 bg-primary text-white font-black uppercase tracking-widest rounded-xl shadow-[0_0_20px_rgba(249,115,22,0.3)] hover:-translate-y-1 transition-all flex items-center gap-3 group"
+                      >
+                         Finalize Application 
+                         <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </div>

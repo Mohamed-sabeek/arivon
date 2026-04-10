@@ -13,6 +13,8 @@ const atsRoutes = require('./routes/atsRoutes');
 const assessmentRoutes = require('./routes/assessmentRoutes');
 const chatRoutes = require('./routes/chatRoutes');
 const repoRoutes = require('./routes/repoRoutes');
+const userRoutes = require('./routes/userRoutes');
+const applicationRoutes = require('./routes/applicationRoutes');
 
 const app = express();
 
@@ -35,6 +37,8 @@ app.use('/api/ats', atsRoutes);
 app.use('/api/assessment', assessmentRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/repo', repoRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/applications', applicationRoutes);
 
 // Database Connection
 mongoose.connect(process.env.MONGODB_URI)

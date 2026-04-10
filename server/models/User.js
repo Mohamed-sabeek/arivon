@@ -14,6 +14,35 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  role: {
+    type: String,
+    enum: ['student', 'recruiter'],
+    default: 'student'
+  },
+  companyName: {
+    type: String,
+    default: ''
+  },
+  companyWebsite: {
+    type: String,
+    default: ''
+  },
+  companyLocation: {
+    type: String,
+    default: ''
+  },
+  industry: {
+    type: String,
+    default: ''
+  },
+  companySize: {
+    type: String,
+    default: ''
+  },
+  companyDescription: {
+    type: String,
+    default: ''
+  },
   // Legacy fields (kept for backward compatibility)
   education: {
     type: String,
@@ -34,6 +63,10 @@ const UserSchema = new mongoose.Schema({
   
   // Onboarding fields
   isProfileComplete: {
+    type: Boolean,
+    default: false
+  },
+  companyProfileCompleted: {
     type: Boolean,
     default: false
   },

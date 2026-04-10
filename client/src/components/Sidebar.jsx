@@ -1,6 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
+  Users,
   LayoutDashboard, 
   Target, 
   Layers, 
@@ -25,7 +26,14 @@ const Sidebar = ({ isOpen, toggleSidebar, isCollapsed, setIsCollapsed }) => {
   const { user, profile, logout } = useAuth();
   const location = useLocation();
 
-  const menuItems = [
+  const isRecruiter = user?.role === 'recruiter' || profile?.role === 'recruiter';
+
+  const menuItems = isRecruiter ? [
+    { icon: LayoutDashboard, label: 'Dashboard', path: '/recruiter/dashboard' },
+    { icon: Briefcase, label: 'My Job Listings', path: '/recruiter/jobs' }, // Placeholder for now
+    { icon: Users, label: 'Recruit Candidates', path: '/recruiter/candidates' }, // Placeholder
+    { icon: UserIcon, label: 'Company Profile', path: '/profile' },
+  ] : [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
     { icon: UserIcon, label: 'Profile', path: '/profile' },
     { icon: FileSearch, label: 'ATS Analyzer', path: '/ats' },

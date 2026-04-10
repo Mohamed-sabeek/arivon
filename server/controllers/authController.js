@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 
 const register = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, role, companyName } = req.body;
     
     // Check if user exists
     let user = await User.findOne({ email });
@@ -19,7 +19,9 @@ const register = async (req, res) => {
     user = new User({
       name,
       email,
-      password: hashedPassword
+      password: hashedPassword,
+      role: role || 'student',
+      companyName: companyName || ''
     });
 
     await user.save();
@@ -52,10 +54,29 @@ const login = async (req, res) => {
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
 
-    const userResponse = user.toObject();
-    delete userResponse.password;
+    // Auto fix old users: migrate 'user' role to 'student'
+    if (user.role === 'user') {
+      user.role = 'student';
+      await user.save();
+    }
 
-    res.json({ token, user: userResponse });
+    res.json({ 
+      token, 
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        isProfileComplete: user.isProfileComplete,
+        companyProfileCompleted: user.companyProfileCompleted,
+        companyName: user.companyName || "",
+        companyWebsite: user.companyWebsite || "",
+        companyLocation: user.companyLocation || "",
+        industry: user.industry || "",
+        companySize: user.companySize || "",
+        companyDescription: user.companyDescription || ""
+      }
+    });
   } catch (error) {
     res.status(500).json({ message: 'Server Error', error: error.message });
   }

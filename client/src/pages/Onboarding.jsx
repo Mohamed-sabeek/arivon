@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -27,7 +27,16 @@ const PROJECT_TYPES = [
 
 const Onboarding = () => {
   const navigate = useNavigate();
-  const { refreshProfile } = useAuth();
+  const { user, profile, refreshProfile } = useAuth();
+  
+  // Guard: Redirect recruiters away from onboarding
+  useEffect(() => {
+    const role = user?.role || profile?.role;
+    if (role === 'recruiter') {
+      navigate('/recruiter/dashboard', { replace: true });
+    }
+  }, [user, profile, navigate]);
+  
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [resumeFile, setResumeFile] = useState(null);

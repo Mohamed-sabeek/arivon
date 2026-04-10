@@ -1,6 +1,7 @@
 const axios = require('axios');
 const jobs = require('../data/jobs.json');
 const User = require('../models/User');
+const Job = require('../models/Job');
 
 const getMatches = async (userSkills) => {
   return jobs.map(job => {
@@ -89,4 +90,172 @@ const searchAdzunaJobs = async (req, res) => {
   }
 };
 
-module.exports = { getDashboardData, searchAdzunaJobs };
+// Recruiter Functions
+const createJob = async (req, res) => {
+  try {
+    const { title, companyName, skillsRequired, description, salary, location } = req.body;
+    
+    const newJob = new Job({
+      title,
+      companyName,
+      recruiterId: req.user.id,
+      skillsRequired,
+      description,
+      salary,
+      location
+    });
+
+    await newJob.save();
+    res.status(201).json({ message: 'Job posted successfully', job: newJob });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to create job', error: error.message });
+  }
+};
+
+const getRecruiterJobs = async (req, res) => {
+  try {
+    const jobs = await Job.find({ recruiterId: req.user.id }).sort({ createdAt: -1 });
+    res.json(jobs);
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch jobs', error: error.message });
+  }
+};
+
+const updateJobStatus = async (req, res) => {
+  try {
+    const { status } = req.body;
+    const job = await Job.findOneAndUpdate(
+      { _id: req.params.id, recruiterId: req.user.id },
+      { status },
+      { new: true }
+    );
+
+    if (!job) return res.status(404).json({ message: 'Job not found' });
+    res.json({ message: 'Job status updated', job });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to update job status', error: error.message });
+  }
+};
+
+const updateJob = async (req, res) => {
+  try {
+    const job = await Job.findOneAndUpdate(
+      { _id: req.params.id, recruiterId: req.user.id },
+      req.body,
+      { new: true }
+    );
+
+    if (!job) return res.status(404).json({ message: 'Job not found' });
+    res.json({ message: 'Job updated successfully', job });
+  } catch (error) {
+    console.error('Update Job Error:', error);
+    res.status(500).json({ message: 'Failed to update job', error: error.message });
+  }
+};
+
+const deleteJob = async (req, res) => {
+  try {
+    const job = await Job.findOneAndDelete({ _id: req.params.id, recruiterId: req.user.id });
+    if (!job) return res.status(404).json({ message: 'Job not found' });
+    res.json({ message: 'Job deleted successfully' });
+  } catch (error) {
+    console.error('Delete Job Error:', error);
+    res.status(500).json({ message: 'Failed to delete job', error: error.message });
+  }
+};
+
+const getJobById = async (req, res) => {
+  try {
+    const job = await Job.findById(req.params.id);
+    if (!job) return res.status(404).json({ message: 'Job not found' });
+    res.json(job);
+  } catch (error) {
+    console.error('Get Job Error:', error);
+    res.status(500).json({ message: 'Failed to fetch job', error: error.message });
+  }
+};
+
+const searchInternalJobs = async (req, res) => {
+  try {
+    const { keyword, location } = req.query;
+    
+    let query = { status: 'Active' };
+    
+    if (keyword) {
+      query.$or = [
+        { title: { $regex: keyword, $options: 'i' } },
+        { description: { $regex: keyword, $options: 'i' } },
+        { skillsRequired: { $elemMatch: { $regex: keyword, $options: 'i' } } }
+      ];
+    }
+    
+    if (location) {
+      query.location = { $regex: location, $options: 'i' };
+    }
+
+    let internalJobs = await Job.find(query);
+
+    if (keyword) {
+      const lowerKeyword = keyword.toLowerCase();
+      
+      const scoredJobs = internalJobs.map(job => {
+        let score = 0;
+        const jobObj = job.toObject ? job.toObject() : job;
+
+        if (jobObj.title && jobObj.title.toLowerCase().includes(lowerKeyword)) {
+          score += 3;
+        }
+        if (jobObj.skillsRequired && jobObj.skillsRequired.some(s => s.toLowerCase().includes(lowerKeyword))) {
+          score += 2;
+        }
+        if (jobObj.description && jobObj.description.toLowerCase().includes(lowerKeyword)) {
+          score += 1;
+        }
+
+        return { ...jobObj, relevanceScore: score };
+      });
+
+      scoredJobs.sort((a, b) => {
+        if (b.relevanceScore !== a.relevanceScore) {
+          return b.relevanceScore - a.relevanceScore;
+        }
+        return new Date(b.createdAt) - new Date(a.createdAt);
+      });
+
+      internalJobs = scoredJobs;
+    } else {
+      internalJobs = internalJobs.map(job => (job.toObject ? job.toObject() : job));
+      internalJobs.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    }
+    
+    // Normalize for frontend consistency with Adzuna mappings
+    const normalizedInternal = internalJobs.map(job => ({
+      id: job._id,
+      title: job.title,
+      company: job.companyName,
+      location: job.location,
+      description: job.description,
+      extractedSkills: job.skillsRequired,
+      postedDate: job.createdAt,
+      source: 'internal',
+      salary: job.salary
+    }));
+
+    res.json(normalizedInternal);
+  } catch (error) {
+    console.error('Internal Search Error:', error);
+    res.status(500).json({ message: 'Internal Job search failed', error: error.message });
+  }
+};
+
+module.exports = { 
+  getDashboardData, 
+  searchAdzunaJobs,
+  searchInternalJobs,
+  createJob,
+  getRecruiterJobs,
+  updateJobStatus,
+  getJobById,
+  updateJob,
+  deleteJob
+};

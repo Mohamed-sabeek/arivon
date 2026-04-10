@@ -19,12 +19,30 @@ const AuthCard = ({ type }) => {
     setError('');
     setLoading(true);
     try {
+      let userData;
       if (isLogin) {
-        await login(formData.email, formData.password);
+        userData = await login(formData.email, formData.password);
       } else {
-        await register(formData.name, formData.email, formData.password);
+        userData = await register(formData.name, formData.email, formData.password);
       }
-      navigate('/dashboard', { replace: true });
+
+      const user = userData.user;
+
+      if (user.role === "student") {
+        if (!user.isProfileComplete) {
+          navigate("/onboarding");
+        } else {
+          navigate("/dashboard");
+        }
+      }
+
+      if (user.role === "recruiter") {
+        if (!user.companyProfileCompleted) {
+          navigate("/recruiter/setup");
+        } else {
+          navigate("/recruiter/dashboard");
+        }
+      }
     } catch (err) {
       setError(err.response?.data?.message || 'Authentication failed. Please check your credentials.');
     } finally {
@@ -80,7 +98,7 @@ const AuthCard = ({ type }) => {
                   type="text"
                   required
                   className="floating-label-input pl-14"
-                  placeholder="John Doe"
+                  placeholder="(Enter name)"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 />

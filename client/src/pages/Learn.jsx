@@ -53,8 +53,8 @@ const Learn = () => {
       return;
     }
 
-    // 3. Check localStorage persistence
-    const savedVideos = localStorage.getItem(`videos_${skill}`);
+    // 3. Check sessionStorage persistence
+    const savedVideos = sessionStorage.getItem(`videos_${skill}`);
     if (savedVideos) {
       const parsed = JSON.parse(savedVideos);
       videoCache[skill] = parsed;
@@ -83,9 +83,9 @@ const Learn = () => {
 
       const fetchedVideos = response.data.items;
       
-      // 4. Update memory cache and localStorage
+      // 4. Update memory cache and sessionStorage
       videoCache[skill] = fetchedVideos;
-      localStorage.setItem(`videos_${skill}`, JSON.stringify(fetchedVideos));
+      sessionStorage.setItem(`videos_${skill}`, JSON.stringify(fetchedVideos));
       
       setVideos(fetchedVideos);
     } catch (err) {

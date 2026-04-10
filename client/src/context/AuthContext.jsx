@@ -9,7 +9,15 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = sessionStorage.getItem('token');
+    const savedUser = sessionStorage.getItem('user');
+
+    if (savedUser) {
+      const parsedUser = JSON.parse(savedUser);
+      setUser(parsedUser);
+      setProfile(parsedUser);
+    }
+
     if (token) {
       loadUser();
     } else {
@@ -44,8 +52,10 @@ export const AuthProvider = ({ children }) => {
       
       setUser(userData);
       setProfile(userData);
+      sessionStorage.setItem('user', JSON.stringify(userData));
     } catch (err) {
-      localStorage.removeItem('token');
+      sessionStorage.removeItem('token');
+      sessionStorage.removeItem('user');
       setUser(null);
       setProfile(null);
     } finally {
@@ -88,22 +98,24 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     const res = await api.post('/auth/login', { email, password });
-    localStorage.setItem('token', res.data.token);
+    sessionStorage.setItem('token', res.data.token);
+    sessionStorage.setItem('user', JSON.stringify(res.data.user));
     setUser(res.data.user);
     setProfile(res.data.user);
     return res.data;
   };
 
-  const register = async (name, email, password) => {
-    const res = await api.post('/auth/register', { name, email, password });
-    localStorage.setItem('token', res.data.token);
+  const register = async (name, email, password, role, companyName) => {
+    const res = await api.post('/auth/register', { name, email, password, role, companyName });
+    sessionStorage.setItem('token', res.data.token);
+    sessionStorage.setItem('user', JSON.stringify(res.data.user));
     setUser(res.data.user);
     setProfile(res.data.user);
     return res.data;
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
+    sessionStorage.clear();
     setUser(null);
     setProfile(null);
   };

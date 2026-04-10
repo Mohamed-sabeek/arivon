@@ -29,7 +29,7 @@ const ATS = () => {
 
   useEffect(() => {
     try {
-      const saved = localStorage.getItem('atsResult');
+      const saved = sessionStorage.getItem('atsResult');
       if (saved) {
         setResult(JSON.parse(saved));
       }
@@ -42,7 +42,7 @@ const ATS = () => {
     setResult(null);
     setFile(null);
     setError(null);
-    localStorage.removeItem('atsResult');
+    sessionStorage.removeItem('atsResult');
   };
 
   const handleFileChange = (e) => {
@@ -80,7 +80,7 @@ const ATS = () => {
 
       setResult(response.data);
       try {
-        localStorage.setItem('atsResult', JSON.stringify(response.data));
+        sessionStorage.setItem('atsResult', JSON.stringify(response.data));
       } catch (err) {
         console.warn("Failed to save ATS result", err);
       }
