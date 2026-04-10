@@ -18,7 +18,7 @@ const generateQuestions = async (req, res) => {
     Rules:
     - Include easy, medium, and hard questions
     - Each question must have 4 options
-    - Provide correct answer
+    - Provide correct answer as a SINGLE LETTER (e.g., "A", "B", "C", or "D")
     - Questions should be job-oriented
     - Return strictly JSON format only: 
     [
@@ -28,7 +28,7 @@ const generateQuestions = async (req, res) => {
         "correctAnswer": "A"
       }
     ]
-    Do not include any other text in your response.`;
+    Do not include any other text or explanations in your response.`;
 
     const chatCompletion = await groq.chat.completions.create({
       messages: [{ role: 'user', content: prompt }],
@@ -63,15 +63,38 @@ const submitQuiz = async (req, res) => {
 
   try {
     let correct = 0;
+    console.log(`\n=== SCORING ASSESSMENT: ${skill} ===`);
+    
     questions.forEach((q, index) => {
-      if (q.correctAnswer === answers[index]) {
-        correct++;
+      const userAnswer = String(answers[index] || '').trim().toUpperCase();
+      let correctAnswerField = String(q.correctAnswer || q.correct_answer || '').trim();
+      
+      // Determine the intended correct letter (A, B, C, or D)
+      let correctLetter = '';
+      
+      if (correctAnswerField.length === 1 && /^[A-D]$/i.test(correctAnswerField)) {
+        // AI returned a single letter
+        correctLetter = correctAnswerField.toUpperCase();
+      } else {
+        // AI returned the full text of the answer. Find which option matches this text.
+        const foundIdx = q.options.findIndex(opt => 
+          String(opt).trim().toLowerCase() === correctAnswerField.toLowerCase()
+        );
+        if (foundIdx !== -1) {
+          correctLetter = String.fromCharCode(65 + foundIdx);
+        }
       }
+
+      const isMatch = (userAnswer === correctLetter);
+      if (isMatch) correct++;
+
+      console.log(`Q${index + 1}: User[${userAnswer}] vs Expected[${correctLetter}] (${correctAnswerField}) -> ${isMatch ? 'CORRECT' : 'WRONG'}`);
     });
 
     const score = Math.round((correct / questions.length) * 100);
-    // Updated threshold: 70%
     const status = score >= 70 ? 'passed' : 'failed';
+    
+    console.log(`FINAL SCORE: ${score}% (${correct}/${questions.length}) - ${status}\n`);
 
     const user = await User.findById(userId);
     if (!user) {
