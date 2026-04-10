@@ -18,25 +18,41 @@ const applicationRoutes = require('./routes/applicationRoutes');
 
 const app = express();
 
-// CORS Configuration - Whitelist local and production
+// 1. CORS Configuration - Whitelist local and production
+// Place this BEFORE all other middleware and routes
 const allowedOrigins = [
   'http://localhost:5173',
-  process.env.FRONTEND_URL
-].filter(Boolean);
+  'https://arivon.vercel.app'
+];
 
-app.use(cors({
+const corsOptions = {
   origin: function (origin, callback) {
     // allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
-    if (allowedOrigins.indexOf(origin) === -1) {
-      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
-      return callback(new Error(msg), false);
-    }
-    return callback(null, true);
-  },
-  credentials: true
-}));
+    
+    // Check if origin is in whitelist or is a variation (like trailing slash)
+    const normalizedOrigin = origin.replace(/\/$/, "");
+    const isAllowed = allowedOrigins.some(ao => ao.replace(/\/$/, "") === normalizedOrigin);
 
+    if (isAllowed) {
+      callback(null, true);
+    } else {
+      console.log(`CORS Blocked for origin: ${origin}`);
+      callback(new Error('Not allowed by CORS'), false);
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+};
+
+// 2. Apply CORS middleware
+app.use(cors(corsOptions));
+
+// 3. Handle Preflight OPTIONS requests for all routes
+app.options("*", cors(corsOptions));
+
+// Other Middleware
 app.use(bodyParser.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
