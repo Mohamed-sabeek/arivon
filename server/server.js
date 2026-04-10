@@ -49,9 +49,6 @@ const corsOptions = {
 // 2. Apply CORS middleware
 app.use(cors(corsOptions));
 
-// 3. Handle Preflight OPTIONS requests for all routes
-app.options("*", cors(corsOptions));
-
 // Other Middleware
 app.use(bodyParser.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
