@@ -18,16 +18,36 @@ const applicationRoutes = require('./routes/applicationRoutes');
 
 const app = express();
 
-// Create uploads directory if it doesn't exist
-const uploadsDir = path.join(__dirname, 'uploads', 'resumes');
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
-}
+// CORS Configuration - Whitelist local and production
+const allowedOrigins = [
+  'http://localhost:5173',
+  process.env.FRONTEND_URL
+].filter(Boolean);
 
-// Middleware
-app.use(cors());
+app.use(cors({
+  origin: function (origin, callback) {
+    // allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) === -1) {
+      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  },
+  credentials: true
+}));
+
 app.use(bodyParser.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// Root Route for Server Status
+app.get('/', (req, res) => {
+  res.json({ 
+    message: 'Arivon AI Career Intelligence Backend: ONLINE',
+    status: 'Operational',
+    timestamp: new Date()
+  });
+});
 
 // Routes
 app.use('/api/auth', authRoutes);

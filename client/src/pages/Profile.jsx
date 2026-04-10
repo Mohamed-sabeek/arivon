@@ -295,10 +295,15 @@ const Profile = () => {
               <DetailSection icon={Heart} label="Interests" isList={true} field="interests" />
             </div>
 
-            <div className="glass-card p-10 space-y-8 lg:col-span-2">
+        <div className="glass-card p-10 space-y-8 lg:col-span-2">
               <h3 className="text-xl font-bold border-b border-white/5 pb-4">Resume</h3>
               {profile.resumeUrl ? (
-                <a href={`http://localhost:5000${profile.resumeUrl}`} target="_blank" rel="noreferrer" className="flex items-center gap-3 bg-primary/10 p-4 rounded-xl">
+                <a 
+                  href={`${(import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api').replace('/api', '')}${profile.resumeUrl}`} 
+                  target="_blank" 
+                  rel="noreferrer" 
+                  className="flex items-center gap-3 bg-primary/10 p-4 rounded-xl"
+                >
                   <FileText className="w-6 h-6 text-primary" />
                   <div className="flex-1 font-bold text-sm">View Resume</div>
                   <Download className="w-5 h-5 text-primary" />
