@@ -102,6 +102,10 @@ export const AuthProvider = ({ children }) => {
     sessionStorage.setItem('user', JSON.stringify(res.data.user));
     setUser(res.data.user);
     setProfile(res.data.user);
+    
+    // Fetch full profile immediately to ensure dashboard has all data
+    await loadUser();
+    
     return res.data;
   };
 
@@ -111,6 +115,10 @@ export const AuthProvider = ({ children }) => {
     sessionStorage.setItem('user', JSON.stringify(res.data.user));
     setUser(res.data.user);
     setProfile(res.data.user);
+    
+    // Fetch full profile immediately
+    await loadUser();
+    
     return res.data;
   };
 
