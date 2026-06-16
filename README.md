@@ -91,139 +91,149 @@ Arivon/
 - MongoDB (local or cloud)
 
 ---
-
 ### 1. Clone the Repository
 
 ```bash
 git clone https://github.com/your-username/arivon.git
 cd arivon
+```
 
-2. Backend Setup
+### 2. Backend Setup
+```bash
 cd server
 npm install
+```
 
-Create .env file:
-
+Create `.env` file:
+```env
 PORT=5000
 MONGO_URI=your_mongodb_uri
 JWT_SECRET=your_secret_key
 GROQ_API_KEY=your_groq_api_key
+```
 
 Run backend:
-
+```bash
 npm run dev
+```
+*Backend runs at: http://localhost:5000*
 
-Backend runs at: http://localhost:5000
-
-3. Frontend Setup
+### 3. Frontend Setup
+```bash
 cd client
 npm install
 npm run dev
+```
+*Frontend runs at: http://localhost:5173*
 
-Frontend runs at: http://localhost:5173
+---
 
-🧠 How It Works
-User Profiling Flow
-User signs up and logs in
-Completes onboarding questions:
-Skills
-Interests
-Experience
-Resume upload
-Data stored in MongoDB
-Profile used for AI matching
-AI Career Match Flow
-Fetch user profile from database
-Compute match score using backend logic
-Send enriched prompt to LLM (Groq)
-Generate:
-Match percentage
-Skill gap analysis
-Recommendations
-Job Browsing Flow
-Jobs loaded dynamically
-Each job evaluated against user profile
-Match score displayed
-Intelligent loading UI simulates AI processing
-Skill Verification Flow
-Level 1 – Screening
-MCQ-based test
-Evaluates theoretical knowledge
-Level 2 – Practical Task
-User navigates to detailed task page
-Reads real-world problem statement
-Builds solution
-Submits GitHub repository
-Dashboard Flow
+## 🧠 How It Works
+
+### User Profiling Flow
+1. User signs up and logs in
+2. Completes onboarding questions:
+   - Skills
+   - Interests
+   - Experience
+   - Resume upload
+3. Data stored in MongoDB
+4. Profile used for AI matching
+
+### AI Career Match Flow
+1. Fetch user profile from database
+2. Compute match score using backend logic
+3. Send enriched prompt to LLM (Groq)
+4. Generate:
+   - Match percentage
+   - Skill gap analysis
+   - Recommendations
+
+### Job Browsing Flow
+1. Jobs loaded dynamically
+2. Each job evaluated against user profile
+3. Match score displayed
+4. Intelligent loading UI simulates AI processing
+
+### Skill Verification Flow
+**Level 1 – Screening**
+- MCQ-based test
+- Evaluates theoretical knowledge
+
+**Level 2 – Practical Task**
+1. User navigates to detailed task page
+2. Reads real-world problem statement
+3. Builds solution
+4. Submits GitHub repository
+
+### Dashboard Flow
 Displays:
-Career match results
-Completed assessments
-AI insights
-Updates dynamically based on user activity
-📈 Scalability
-Backend can be deployed using Docker & cloud services
-MongoDB can scale horizontally using Atlas
-AI requests handled asynchronously
-Frontend can be deployed via CDN
-💡 Feasibility
+- Career match results
+- Completed assessments
+- AI insights
+- Updates dynamically based on user activity
 
+---
+
+## 📈 Scalability
+- Backend can be deployed using Docker & cloud services
+- MongoDB can scale horizontally using Atlas
+- AI requests handled asynchronously
+- Frontend can be deployed via CDN
+
+## 💡 Feasibility
 Arivon is built using widely adopted technologies like React, Node.js, and MongoDB.
 The AI integration uses Groq API, making it lightweight and fast without requiring heavy infrastructure.
 
 This makes the system:
+- Easy to deploy
+- Cost-efficient
+- Scalable for real-world usage
 
-Easy to deploy
-Cost-efficient
-Scalable for real-world usage
-🌟 Novelty
-Combines AI + Skill Validation in one platform
-Uses Hybrid AI (Math + LLM reasoning)
-Goes beyond resumes by validating real-world skills
-Provides explainable career recommendations
-🔧 Feature Depth
-Personalized job matching using structured profile data
-Real-world project-based verification system
-AI-generated career insights
-Dynamic UI simulating intelligent systems
-Modular backend architecture for easy extension
-⚠️ Ethical Use & Disclaimer
+## 🌟 Novelty
+- Combines AI + Skill Validation in one platform
+- Uses Hybrid AI (Math + LLM reasoning)
+- Goes beyond resumes by validating real-world skills
+- Provides explainable career recommendations
 
-Arivon is intended for:
-
-Educational purposes
-Career guidance
-Skill development
-
-Do not misuse the platform for fraudulent job applications or false submissions.
-
-📜 License
-
-This project is licensed under the MIT License.
-
-🤝 Contributing
-
-Contributions are welcome!
-
-Fork the repository
-Create a feature branch
-Commit your changes
-Open a Pull Request
-🧩 Author
-
-Mohamed Sabeek
-💻 Full Stack Developer | AI Enthusiast
-
-🎤 Final Note
-
-Arivon is not just a job platform — it is an AI-powered career intelligence system that analyzes, validates, and guides users toward the right career path.
-
+## 🔧 Feature Depth
+- Personalized job matching using structured profile data
+- Real-world project-based verification system
+- AI-generated career insights
+- Dynamic UI simulating intelligent systems
+- Modular backend architecture for easy extension
 
 ---
 
-🔥 If you want next upgrade:
-- GitHub badges (stars, forks, contributors)
-- Demo section + screenshots
-- API docs section
-- Hackathon-winning pitch section  
+## ⚠️ Ethical Use & Disclaimer
+Arivon is intended for:
+- Educational purposes
+- Career guidance
+- Skill development
 
-Just tell me 👍
+**Do not misuse the platform for fraudulent job applications or false submissions.**
+
+---
+
+## 📜 License
+This project is licensed under the MIT License.
+
+---
+
+## 🤝 Contributing
+Contributions are welcome!
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Open a Pull Request
+
+---
+
+## 🧩 Author
+**Mohamed Sabeek**
+💻 Full Stack Developer | AI Enthusiast
+
+---
+
+## 🎤 Final Note
+*Arivon is not just a job platform — it is an AI-powered career intelligence system that analyzes, validates, and guides users toward the right career path.*

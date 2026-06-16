@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import botLogo from "../../assets/bot.png";
 import api from "../../api/axios";
+import { useAuth } from "../../context/AuthContext";
 
 const DEFAULT_MESSAGE = {
   id: "welcome",
@@ -94,6 +95,7 @@ const MessageBubble = ({ msg }) => {
 
 /* ── Chatbot ── */
 const Chatbot = ({ studentProfile = {} }) => {
+  const { user } = useAuth();
   const [messages, setMessages] = useState([DEFAULT_MESSAGE]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -116,6 +118,22 @@ const Chatbot = ({ studentProfile = {} }) => {
     const userMsg = { id: Date.now(), role: "user", text, timestamp: new Date() };
     setMessages((prev) => [...prev, userMsg]);
     setInput("");
+
+    if (!user) {
+      setTimeout(() => {
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: Date.now() + 1,
+            role: "assistant",
+            text: "⚠️ Please log in to chat with Arivon AI Career Twin and get personalized guidance.",
+            timestamp: new Date(),
+          },
+        ]);
+      }, 500);
+      return;
+    }
+
     setIsLoading(true);
 
     try {
