@@ -58,7 +58,8 @@ python-ai/__pycache__/
 *.pyc
 *.pyo
 # ======================
-# Uploads / Resume Files
+# Uploads / Resume Files / Media
 # ======================
 server/uploads/
 *.pdf
+*.mp4
