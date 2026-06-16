@@ -66,10 +66,7 @@ const RecruiterDashboard = () => {
           </div>
 
           <div className="flex gap-4">
-            <button className="glass-card px-6 py-3 flex items-center gap-2 hover:bg-white/5 transition-all text-sm font-bold uppercase tracking-widest border-white/10">
-              <BarChart3 className="w-4 h-4 text-secondary" />
-              Analytic Reports
-            </button>
+
             <button 
               onClick={() => navigate('/recruiter/post-job')}
               className="glow-button px-8 py-3 flex items-center gap-2 text-sm font-black uppercase tracking-widest"
