@@ -1,6 +1,11 @@
 # 🚀 Arivon
 
 > An AI-powered career intelligence platform that analyzes user profiles, matches them with relevant jobs, and validates skills through a structured verification system.
+
+### 🌐 Live Links
+- **Frontend (Vercel):** [https://arivon.vercel.app/](https://arivon.vercel.app/)
+- **Backend API (Render):** [https://arivon.onrender.com](https://arivon.onrender.com)
+
 ---
 
 ## 📌 Problem Statement
