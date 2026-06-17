@@ -50,6 +50,7 @@ Intelligent Career Matching & Skill Validation Platform for Students and Job See
 
 ## 📂 Project Structure
 
+```text
 Arivon/
 ├── client/
 │   ├── src/
@@ -97,7 +98,7 @@ Arivon/
 │
 ├── README.md
 └── .env
-
+```
 
 ---
 
