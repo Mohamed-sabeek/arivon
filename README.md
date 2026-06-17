@@ -1,11 +1,6 @@
 # 🚀 Arivon
 
 > An AI-powered career intelligence platform that analyzes user profiles, matches them with relevant jobs, and validates skills through a structured verification system.
-
-![License](https://img.shields.io/badge/license-MIT-blue)
-![Stack](https://img.shields.io/badge/stack-MERN%20%7C%20AI-green)
-![Status](https://img.shields.io/badge/status-Active-brightgreen)
-
 ---
 
 ## 📌 Problem Statement
@@ -24,6 +19,9 @@ Intelligent Career Matching & Skill Validation Platform for Students and Job See
 | 💼 Job Browsing | Shows relevant jobs with AI-calculated match score |
 | 🤖 AI Assistant | Chatbot powered by LLM for career guidance |
 | 🔐 Authentication | Secure JWT-based login and user management |
+| 📚 Learn Module | Identifies missing skills and recommends learning resources using YouTube API |
+| ⚡ Smart Caching | Multi-layer caching system (Memory + LocalStorage + API) for optimized learning content delivery |
+| 📄 Resume Management | Upload, view, edit, and re-upload resumes directly from the profile dashboard |
 
 ---
 
@@ -53,33 +51,52 @@ Intelligent Career Matching & Skill Validation Platform for Students and Job See
 ## 📂 Project Structure
 
 Arivon/
-├── client/ # Frontend (React)
-│ ├── src/
-│ │ ├── components/
-│ │ │ ├── chat/
-│ │ │ │ ├── Chatbot.jsx
-│ │ │ │ └── AIWidget.jsx
-│ │ ├── pages/
-│ │ │ ├── Dashboard.jsx
-│ │ │ ├── BrowseJobs.jsx
-│ │ │ ├── SkillCheck.jsx
-│ │ │ └── Profile.jsx
-│ │ ├── data/
-│ │ │ └── jobs.js
-│ │ └── App.jsx
+├── client/
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── Sidebar.jsx
+│   │   │   ├── ProtectedRoute.jsx
+│   │   │   ├── chat/
+│   │   │   │   ├── Chatbot.jsx
+│   │   │   │   └── AIWidget.jsx
+│   │   │
+│   │   ├── pages/
+│   │   │   ├── Dashboard.jsx
+│   │   │   ├── Profile.jsx
+│   │   │   ├── BrowseJobs.jsx
+│   │   │   ├── SkillCheck.jsx
+│   │   │   ├── Learn.jsx
+│   │   │   ├── ATSAnalyzer.jsx
+│   │   │   ├── Login.jsx
+│   │   │   └── Register.jsx
+│   │   │
+│   │   ├── context/
+│   │   │   └── AuthContext.jsx
+│   │   │
+│   │   ├── data/
+│   │   │   ├── jobs.js
+│   │   │   └── skills.js
+│   │   │
+│   │   ├── services/
+│   │   ├── assets/
+│   │   ├── App.jsx
+│   │   └── main.jsx
+│   │
+│   └── package.json
 │
-├── server/ # Backend (Node.js)
-│ ├── controllers/
-│ │ ├── authController.js
-│ │ ├── jobController.js
-│ │ └── careerController.js
-│ ├── routes/
-│ ├── models/
-│ ├── middleware/
-│ ├── config/
-│ └── server.js
+├── server/
+│   ├── controllers/
+│   ├── models/
+│   ├── routes/
+│   ├── middleware/
+│   ├── config/
+│   ├── utils/
+│   ├── uploads/
+│   ├── server.js
+│   └── package.json
 │
-└── README.md
+├── README.md
+└── .env
 
 
 ---
@@ -173,6 +190,17 @@ Displays:
 - AI insights
 - Updates dynamically based on user activity
 
+### Learn Module Flow
+1. Analyze user profile skills
+2. Identify missing skills from global skill repository
+3. Display skill gap recommendations
+4. Fetch relevant learning videos using YouTube Data API
+5. Cache videos using:
+   * In-memory cache
+   * LocalStorage persistence
+   * API fallback mechanism
+6. Provide instant access to learning resources
+
 ---
 
 ## 📈 Scalability
@@ -212,11 +240,6 @@ Arivon is intended for:
 - Skill development
 
 **Do not misuse the platform for fraudulent job applications or false submissions.**
-
----
-
-## 📜 License
-This project is licensed under the MIT License.
 
 ---
 
